@@ -1,0 +1,46 @@
+# CI de FiberDoc: tests pytest sobre PostgreSQL (servicio de GitHub Actions)
+name: CI
+
+on:
+  push:
+    branches: [main, skeleton]
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: fiberdoc_test
+          POSTGRES_USER: fiberdoc
+          POSTGRES_PASSWORD: fiberdoc
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fiberdoc -d fiberdoc_test"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar tests
+        env:
+          SECRET_KEY: ci-no-secreta
+          DEBUG: "True"
+          DATABASE_URL: postgres://fiberdoc:fiberdoc@localhost:5432/fiberdoc_test
+        run: |
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
+          pytest
