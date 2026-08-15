@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-fondo text-tinta antialiased;
+}
+
+/* Chips de color de tubo/fibra (código DIN VDE 0888) */
+.fib-azul { background-color: #5b7ea6; }
+.fib-naranja { background-color: #c9853e; }
+.fib-verde { background-color: #6e9e6e; }
+.fib-marron { background-color: #8a6f52; }
+.fib-gris { background-color: #8f8a82; }
+.fib-blanco { background-color: #b8b2a8; color: #3d3833; }
+.fib-rojo { background-color: #b05a50; }
+.fib-negro { background-color: #4a453f; }
+.fib-amarillo { background-color: #d9c441; color: #3d3833; }
+.fib-violeta { background-color: #8a6fa0; }
+.fib-rosa { background-color: #c98aa0; }
+.fib-turquesa { background-color: #5ba8a0; }
