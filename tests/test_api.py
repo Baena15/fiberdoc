@@ -134,3 +134,50 @@ class TestResumenYMatriz:
     def test_api_docs_accesible(self, api_a):
         assert api_a.get("/api/docs/").status_code == 200
         assert api_a.get("/api/schema/").status_code == 200
+
+
+@pytest.mark.django_db
+class TestAuthSPA:
+    """Endpoints de autenticación por sesión para el frontend React."""
+
+    def test_login_ok_devuelve_usuario_y_sesion(self, user_a, contrata_a):
+        from rest_framework.test import APIClient
+
+        cliente = APIClient()
+        resp = cliente.post(
+            "/api/auth/login/",
+            {"username": "user-a", "password": "test-pass-1234"},
+            format="json",
+        )
+        assert resp.status_code == 200
+        datos = resp.json()
+        assert datos["username"] == "user-a"
+        assert datos["rol"] == "FUSIONADOR"
+        assert datos["contrata"] == "Contrata A"
+        # La sesión queda establecida: /me/ responde 200 con el mismo usuario
+        assert cliente.get("/api/auth/me/").json()["username"] == "user-a"
+
+    def test_login_credenciales_incorrectas_da_401(self, user_a):
+        from rest_framework.test import APIClient
+
+        cliente = APIClient()
+        resp = cliente.post(
+            "/api/auth/login/",
+            {"username": "user-a", "password": "mal"},
+            format="json",
+        )
+        assert resp.status_code == 401
+
+    def test_me_sin_sesion_da_401(self, db):
+        from rest_framework.test import APIClient
+
+        assert APIClient().get("/api/auth/me/").status_code == 401
+
+    def test_me_con_sesion_da_200(self, user_a):
+        from rest_framework.test import APIClient
+
+        cliente = APIClient()
+        cliente.login(username="user-a", password="test-pass-1234")
+        resp = cliente.get("/api/auth/me/")
+        assert resp.status_code == 200
+        assert resp.json()["username"] == "user-a"

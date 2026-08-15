@@ -68,7 +68,8 @@ fiberdoc/
 │   ├── core/               # Cliente, PerfilOperadora, EsquemaColor, TarifaUO/TarifaItem
 │   └── network/            # Obra, OrdenTrabajo, ElementoRed, Cable, PasoTubo,
 │                           # Splitter, Puerto, Fusion, Conexion + API + seed_demo
-├── tests/                  # pytest: invariantes I1-I4, multi-tenant, API
+├── tests/                  # pytest: invariantes I1-I4, multi-tenant, API, auth SPA
+├── frontend/               # SPA React 19 + TS + Vite + Tailwind (login, panel, SpliceMatrix)
 ├── Dockerfile / docker-compose.yml
 ├── requirements.txt        # fijado
 └── .github/workflows/ci.yml
@@ -88,7 +89,35 @@ Endpoints especiales:
 - `GET /api/elementos/{id}/resumen/` → conteos por estado y por nivel
   (OK/WARNING/FUERA según umbrales de la obra).
 - `GET /api/elementos/{id}/matriz/?cable_a=&cable_b=` → filas *sparse* de
-  fusiones entre dos cables (para la futura matriz React).
+  fusiones entre dos cables (para la matriz React).
+
+Endpoints de autenticación SPA (sesión Django):
+
+- `POST /api/auth/login/` `{username, password}` → 200 `{id, username, rol, contrata}` / 401
+- `POST /api/auth/logout/` → 204
+- `GET /api/auth/me/` → 200 usuario actual / 401 (siembra la cookie `csrftoken`)
+
+## Frontend React (`frontend/`)
+
+SPA en **React 19 + TypeScript + Vite + Tailwind CSS** (requisito TFM: vistas
+React consumiendo datos reales del backend). Tres vistas:
+
+- **Login** (`/login`) — sesión Django vía `/api/auth/login/` (CSRF por cookie).
+- **Panel de obra** (`/`) — selector de obra y tarjetas de elementos con
+  semáforo agregado (peor nivel de su `/resumen/`) y conteos OK/WARNING/FUERA.
+- **SpliceMatrix** (`/elementos/:id`) — matriz de fusiones entre dos cables
+  (rejilla `n_tubos × fibras_por_tubo` construida sobre las filas sparse de
+  `/matriz/`), celda coloreada por nivel y modal de detalle. Mobile-first
+  (técnico con guantes junto a la furgoneta).
+
+Desarrollo (con el backend corriendo en `:8000`):
+
+```bash
+cd frontend
+npm install
+npm run dev        # vite proxy /api y /admin -> http://localhost:8000
+npm run build      # build de producción en frontend/dist/
+```
 
 ## Tests y verificación
 
@@ -124,6 +153,7 @@ GitHub Actions), `check` y `makemigrations --check`.
 
 ## Limitaciones conocidas de esta entrega
 
-- Sin frontend React (semanas 3-4), sin Celery/Redis, sin subida de archivos.
+- Sin Celery/Redis, sin subida de archivos. El frontend React aún no se sirve
+  desde Django en producción (se hará en la fase de despliegue).
 - El Dockerfile/compose se ha validado por inspección en el sandbox de desarrollo
   (Docker no disponible ahí); `docker compose up --build` es la vía prevista.

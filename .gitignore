@@ -10,3 +10,7 @@ staticfiles/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Frontend React
+frontend/node_modules/
+frontend/dist/

@@ -7,6 +7,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # Login por sesión para la API navegable y los clientes de prueba
     path("api-auth/", include("rest_framework.urls")),
+    path("api/auth/", include("apps.accounts.api_urls")),
     path("api/", include("apps.network.api_urls")),
     # OpenAPI / Swagger
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
